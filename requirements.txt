@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+pandas
+openpyxl
+jinja2
+python-multipart
+qrcode
+weasyprint
