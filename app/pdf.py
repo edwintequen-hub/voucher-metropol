@@ -55,7 +55,7 @@ def crear_voucher_expedicion(
         Paragraph(
             f"Unidad: {unidad}<br/>"
             f"Terminal: {terminal}<br/>"
-            f"Servicio: {servicio}<br/>"
+            f"Servicio: {filas[0]['SERVICIO CLIENTE']}<br/>"
             f"Tipo Día: {tipo_dia}",
             styles["BodyText"]
         )
@@ -142,26 +142,37 @@ def generar_pdf(
     expediciones = defaultdict(list)
 
     for fila in voucher:
-
-        expediciones[
+        clave = (
+            fila["SERVICIO CLIENTE"],
             fila["EXPEDICION"]
-        ].append(fila)
+        )
+        expediciones[clave].append(fila)
+
+    print("EXPEDICIONES ENCONTRADAS:")
+    print(list(expediciones.keys()))
+    print("TOTAL EXPEDICIONES:", len(expediciones))
 
     tarjetas = []
 
-    for expedicion in sorted(expediciones.keys()):
+    for clave in sorted(expediciones.keys()):
+            
+            
+        servicio_actual, expedicion = clave
+
 
         tarjetas.append(
             crear_voucher_expedicion(
                 expedicion,
-                expediciones[expedicion],
+                expediciones[clave],
                 unidad,
                 terminal,
-                servicio,
+                servicio_actual,
                 tipo_dia,
                 styles
             )
         )
+
+    print("TOTAL TARJETAS:", len(tarjetas))
 
     elementos = []
 

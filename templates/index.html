@@ -295,13 +295,11 @@ unidad.addEventListener(
 "change",
 async () => {
 
-    terminal.innerHTML="";
+    terminal.innerHTML = "";
 
     const r = await fetch(
         "/terminales/" +
-        encodeURIComponent(
-            unidad.value
-        )
+        encodeURIComponent(unidad.value)
     );
 
     const datos = await r.json();
@@ -362,28 +360,37 @@ async function cargarServicios(){
 
     servicio.innerHTML="";
 
-    const r = await fetch(
-        "/servicios/" +
-        encodeURIComponent(unidad.value)
-        + "/" +
-        encodeURIComponent(terminal.value)
-        + "/" +
-        encodeURIComponent(tipoDia.value)
-    );
+const opTodos =
+document.createElement("option");
 
-    const datos = await r.json();
+opTodos.value = "TODOS";
+opTodos.textContent = "TODOS";
 
-    datos.forEach(item => {
+servicio.appendChild(opTodos);
 
-        const op =
-        document.createElement("option");
+const r = await fetch(
+    "/servicios/" +
+    encodeURIComponent(unidad.value)
+    + "/" +
+    encodeURIComponent(terminal.value)
+    + "/" +
+    encodeURIComponent(tipoDia.value)
+);
 
-        op.value = item;
-        op.textContent = item;
+const datos = await r.json();
 
-        servicio.appendChild(op);
+datos.forEach(item => {
 
-    });
+    const op =
+    document.createElement("option");
+
+    op.value = item;
+    op.textContent = item;
+
+    servicio.appendChild(op);
+
+});
+    
 
 }
 

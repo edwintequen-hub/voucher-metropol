@@ -83,16 +83,22 @@ def voucher(
     )
 
 
-@app.get(
-    "/voucher-pdf/{unidad}/{terminal}/{tipo_dia}/{servicio}/{salida}"
-)
+@app.get("/voucher-pdf/{unidad}/{terminal}/{tipo_dia}/{servicio}/{salida}")
 def voucher_pdf(
-    unidad: str,
-    terminal: str,
-    tipo_dia: str,
-    servicio: str,
-    salida: str
+    unidad,
+    terminal,
+    tipo_dia,
+    servicio,
+    salida
 ):
+
+    print(
+        unidad,
+        terminal,
+        servicio,
+        tipo_dia,
+        salida
+    )
 
     datos = obtener_voucher(
         unidad,
@@ -102,10 +108,13 @@ def voucher_pdf(
         salida
     )
 
-    print("TOTAL:", len(datos))
+    print("TOTAL DATOS:", len(datos))
 
     for x in datos[:10]:
-        print(x)
+        print(
+        x["SERVICIO CLIENTE"],
+        x["EXPEDICION"]
+    )
 
     pdf = generar_pdf(
         datos,
@@ -116,10 +125,6 @@ def voucher_pdf(
     )
 
     return Response(
-    content=pdf,
-    media_type="application/pdf",
-    headers={
-        "Content-Disposition":
-        "inline; filename=voucher.pdf"
-    }
-)
+        content=pdf,
+        media_type="application/pdf"
+    )

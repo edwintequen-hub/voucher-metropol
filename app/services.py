@@ -87,64 +87,93 @@ def obtener_voucher(
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT
-            EXPEDICION,
-            [CODIGO PARADERO USUARIO],
-            [NOMBRE PARADERO],
-            [HORARIO DE PASADA PARADERO],
-            [HORARIO DE SALIDA DESDE CABEZAL]
-        FROM anexo5
-        WHERE UNIDAD = ?
-        AND TERMINAL = ?
-        AND [SERVICIO CLIENTE] = ?
-        AND [TIPO DIA] = ?
-        ORDER BY
-            [HORARIO DE SALIDA DESDE CABEZAL],
-            EXPEDICION
-    """, (
-        unidad,
-        terminal,
-        servicio,
-        tipo_dia
-    ))
+    if servicio.upper() == "TODOS":
+
+        cursor.execute("""
+            SELECT
+                [SERVICIO CLIENTE],
+                EXPEDICION,
+                [CODIGO PARADERO USUARIO],
+                [NOMBRE PARADERO],
+                [HORARIO DE PASADA PARADERO],
+                [HORARIO DE SALIDA DESDE CABEZAL]
+            FROM anexo5
+            WHERE UNIDAD = ?
+            AND TERMINAL = ?
+            AND [TIPO DIA] = ?
+            ORDER BY
+                [SERVICIO CLIENTE],
+                EXPEDICION,
+                [HORARIO DE SALIDA DESDE CABEZAL]
+        """, (
+            unidad,
+            terminal,
+            tipo_dia
+        ))
+
+    else:
+
+        cursor.execute("""
+            SELECT
+                [SERVICIO CLIENTE],
+                EXPEDICION,
+                [CODIGO PARADERO USUARIO],
+                [NOMBRE PARADERO],
+                [HORARIO DE PASADA PARADERO],
+                [HORARIO DE SALIDA DESDE CABEZAL]
+            FROM anexo5
+            WHERE UNIDAD = ?
+            AND TERMINAL = ?
+            AND [SERVICIO CLIENTE] = ?
+            AND [TIPO DIA] = ?
+            ORDER BY
+                EXPEDICION,
+                [HORARIO DE SALIDA DESDE CABEZAL]
+        """, (
+            unidad,
+            terminal,
+            servicio,
+            tipo_dia
+        ))
 
     filas = cursor.fetchall()
 
     conn.close()
 
+    print("FILAS SQL:", len(filas))
+
     resultado = []
 
     for fila in filas:
 
-        hora_pasada = str(fila[3] or "")
-        hora_salida = str(fila[4] or "")
+        hora_pasada = str(fila[4] or "")
+        hora_salida = str(fila[5] or "")
 
-        # Eliminar fecha si existe
         if " " in hora_pasada:
             hora_pasada = hora_pasada.split(" ")[1]
 
         if " " in hora_salida:
             hora_salida = hora_salida.split(" ")[1]
 
-        # Eliminar microsegundos
         if "." in hora_pasada:
             hora_pasada = hora_pasada.split(".")[0]
 
         if "." in hora_salida:
             hora_salida = hora_salida.split(".")[0]
 
-        # Filtrar por hora de salida
         if salida.upper() != "TODO":
             if hora_salida[:5] != salida:
                 continue
 
         resultado.append({
-            "EXPEDICION": fila[0],
-            "CODIGO PARADERO USUARIO": fila[1],
-            "NOMBRE PARADERO": fila[2],
+            "SERVICIO CLIENTE": fila[0],
+            "EXPEDICION": fila[1],
+            "CODIGO PARADERO USUARIO": fila[2],
+            "NOMBRE PARADERO": fila[3],
             "HORARIO DE PASADA PARADERO": hora_pasada,
             "HORARIO DE SALIDA DESDE CABEZAL": hora_salida
         })
 
-    return resultado
+    print("REGISTROS RESULTADO:", len(resultado))
+
+    return resultado    
