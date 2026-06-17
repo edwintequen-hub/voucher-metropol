@@ -81,7 +81,7 @@ def crear_voucher_expedicion(
 
     tabla = Table(
     datos,
-    colWidths=[45, 45, 115, 45]
+    colWidths=[30, 30, 75, 30]
 )
 
     tabla.setStyle(TableStyle([
@@ -104,7 +104,7 @@ def crear_voucher_expedicion(
 
     voucher = Table(
     contenido,
-    colWidths=[260]
+    colWidths=[170]
 )
 
     voucher.setStyle(TableStyle([
@@ -176,21 +176,19 @@ def generar_pdf(
 
     elementos = []
 
-    for i in range(0, len(tarjetas), 4):
+    for i in range(0, len(tarjetas), 3):
 
-        grupo = tarjetas[i:i + 4]
+        grupo = tarjetas[i:i + 3]
 
-        while len(grupo) < 4:
+        while len(grupo) < 3:
             grupo.append("")
 
-        pagina = Table(
-    [
-        [grupo[0], grupo[1]],
-        [grupo[2], grupo[3]]
-    ],
-    colWidths=[270, 270],
-    rowHeights=[350, 350]
-)
+            pagina = Table(
+        [
+            [grupo[0], grupo[1], grupo[2]]
+        ],
+        colWidths=[180, 180, 180]
+    )
 
         pagina.setStyle(TableStyle([
             ("VALIGN", (0, 0), (-1, -1), "TOP")
