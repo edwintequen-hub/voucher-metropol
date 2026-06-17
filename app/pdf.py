@@ -2,8 +2,13 @@ from io import BytesIO
 from pathlib import Path
 from collections import defaultdict
 
+
 from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import (
+    getSampleStyleSheet,
+    ParagraphStyle
+)
+
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
@@ -24,7 +29,9 @@ def crear_voucher_expedicion(
     terminal,
     servicio,
     tipo_dia,
-    styles
+    styles,
+    titulo_style,
+    info_style
 ):
 
     contenido = []
@@ -32,24 +39,23 @@ def crear_voucher_expedicion(
     if LOGO_PATH.exists():
 
         logo = Image(str(LOGO_PATH))
-        logo.drawWidth = 50
-        logo.drawHeight = 20
+        logo.drawWidth = 80
+        logo.drawHeight = 40
 
-        contenido.append([logo])
+        cabecera = Table(
+        [[
+            Paragraph("<b>METROPOL</b>", titulo_style),
+            logo
+        ]],
+            colWidths=[160, 320]
+    )
 
-    contenido.append([
-        Paragraph(
-            "<b>METROPOL</b>",
-            styles["Heading3"]
-        )
-    ])
+        cabecera.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("ALIGN", (1, 0), (1, 0), "RIGHT")
+        ]))
 
-    contenido.append([
-        Paragraph(
-            f"<b>Voucher Expedición {expedicion}</b>",
-            styles["BodyText"]
-        )
-    ])
+        contenido.append([cabecera])
 
     contenido.append([
         Paragraph(
@@ -73,15 +79,15 @@ def crear_voucher_expedicion(
     for fila in filas:
 
         datos.append([
-    str(fila["HORARIO DE SALIDA DESDE CABEZAL"])[:5],
-    str(fila["CODIGO PARADERO USUARIO"]),
-    str(fila["NOMBRE PARADERO"]),
-    str(fila["HORARIO DE PASADA PARADERO"])[:5]
-])
+        str(fila["HORARIO DE SALIDA DESDE CABEZAL"])[:5],
+        str(fila["CODIGO PARADERO USUARIO"]),
+        str(fila["NOMBRE PARADERO"]),
+        str(fila["HORARIO DE PASADA PARADERO"])[:5]
+    ])
 
     tabla = Table(
     datos,
-    colWidths=[30, 30, 75, 30]
+    colWidths=[90, 90, 215, 90]
 )
 
     tabla.setStyle(TableStyle([
@@ -90,10 +96,10 @@ def crear_voucher_expedicion(
     ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
 
     # Encabezados más pequeños
-    ("FONTSIZE", (0, 0), (-1, 0), 4),
+    ("FONTSIZE", (0, 0), (-1, 0), 7),
 
     # Datos normales
-    ("FONTSIZE", (0, 1), (-1, -1), 5),
+    ("FONTSIZE", (0, 1), (-1, -1), 8),
 
     ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
@@ -104,16 +110,16 @@ def crear_voucher_expedicion(
 
     voucher = Table(
     contenido,
-    colWidths=[170]
+    colWidths=[490]
 )
 
     voucher.setStyle(TableStyle([
         ("BOX", (0, 0), (-1, -1), 1, colors.black),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 2),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 2),
-        ("TOPPADDING", (0, 0), (-1, -1), 2),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 2)
+        ("LEFTPADDING", (0, 0), (-1, -1), 1),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 1),
+        ("TOPPADDING", (0, 0), (-1, -1), 1),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 1)
     ]))
 
     return voucher
@@ -138,6 +144,20 @@ def generar_pdf(
     )
 
     styles = getSampleStyleSheet()
+
+    titulo_style = ParagraphStyle(
+    "TituloVoucher",
+    parent=styles["Heading3"],
+    fontSize=12,
+    leading=18
+    )
+
+    info_style = ParagraphStyle(
+        "InfoVoucher",
+        parent=styles["BodyText"],
+        fontSize=80,
+        leading=10
+    )
 
     expediciones = defaultdict(list)
 
@@ -168,7 +188,9 @@ def generar_pdf(
                 terminal,
                 servicio_actual,
                 tipo_dia,
-                styles
+                styles,
+                titulo_style,
+                info_style
             )
         )
 
@@ -183,11 +205,14 @@ def generar_pdf(
         while len(grupo) < 3:
             grupo.append("")
 
-            pagina = Table(
+        pagina = Table(
         [
-            [grupo[0], grupo[1], grupo[2]]
+            [grupo[0]],
+            [grupo[1]],
+            [grupo[2]]
         ],
-        colWidths=[180, 180, 180]
+        colWidths=[540],
+        rowHeights=[260,260,260]
     )
 
         pagina.setStyle(TableStyle([
@@ -196,9 +221,12 @@ def generar_pdf(
 
         elementos.append(pagina)
 
-        if i + 4 < len(tarjetas):
+        if i + 3 < len(tarjetas):
             elementos.append(PageBreak())
 
+    print("TOTAL TARJETAS:", len(tarjetas))
+    print("TOTAL ELEMENTOS:", len(elementos))
+    
     doc.build(elementos)
 
     pdf = buffer.getvalue()
