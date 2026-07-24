@@ -198,21 +198,20 @@ def generar_pdf(
 
     elementos = []
 
-    for i in range(0, len(tarjetas), 3):
+    for i in range(0, len(tarjetas), 2):
 
-        grupo = tarjetas[i:i + 3]
+        grupo = tarjetas[i:i + 2]
 
-        while len(grupo) < 3:
+        while len(grupo) < 2:
             grupo.append("")
 
         pagina = Table(
         [
             [grupo[0]],
-            [grupo[1]],
-            [grupo[2]]
+            [grupo[1]]            
         ],
         colWidths=[540],
-        rowHeights=[260,260,260]
+        rowHeights=[380,380]
     )
 
         pagina.setStyle(TableStyle([
@@ -221,7 +220,7 @@ def generar_pdf(
 
         elementos.append(pagina)
 
-        if i + 3 < len(tarjetas):
+        if i + 2 < len(tarjetas):
             elementos.append(PageBreak())
 
     print("TOTAL TARJETAS:", len(tarjetas))
